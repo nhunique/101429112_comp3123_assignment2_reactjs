@@ -1,25 +1,16 @@
 const express = require("express");
-const { body, param, query, validationResult } = require("express-validator");
+const { body, param, query } = require("express-validator");
 const EmployeeModel = require("../models/employee");
+const validate = require("../middleware/validate");
+const authenticateJWT = require("../middleware/auth");
 
 const routerEmployee = express.Router();
 
 /**
- * Helper middleware to handle validation results
- */
-const handleValidationErrors = (req, res, next) => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return res.status(400).json({ status: false, errors: errors.array() });
-  }
-  next();
-};
-
-/**
- * GET /api/v1/emp/employees
+ * GET /employees
  * List all employees
  */
-routerEmployee.get("/employees", async (req, res) => {
+routerEmployee.get("/employees", authenticateJWT,async (req, res) => {
   try {
     const employees = await EmployeeModel.find();
     res.status(200).json({ status: true, employees });
@@ -30,35 +21,50 @@ routerEmployee.get("/employees", async (req, res) => {
 });
 
 /**
- * POST /api/v1/emp/employees
+ * POST /employees
  * Create a new employee
  */
 routerEmployee.post(
   "/employees",
+  authenticateJWT,
   [
     body("first_name").notEmpty().withMessage("First name is required"),
     body("last_name").notEmpty().withMessage("Last name is required"),
+    body("email").notEmpty().withMessage("Email is required"),
+
     body("position").notEmpty().withMessage("Position is required"),
     body("salary")
-      .notEmpty().withMessage("Salary is required")
-      .isNumeric().withMessage("Salary must be numeric"),
+      .notEmpty()
+      .withMessage("Salary is required")
+      .isNumeric()
+      .withMessage("Salary must be numeric"),
     body("date_of_joining")
       .optional()
-      .isDate().withMessage("Invalid date format (expected YYYY-MM-DD)"),
-    body("department")
+      .isDate()
+      .withMessage("Invalid date format (expected YYYY-MM-DD)"),
+    body("department").notEmpty().withMessage("Department is required"),
   ],
-  handleValidationErrors,
+  validate,
   async (req, res) => {
     try {
-      const { first_name, last_name, position, salary, date_of_joining, department } = req.body;
+      const {
+        first_name,
+        last_name,
+        email,
+        position,
+        salary,
+        date_of_joining,
+        department,
+      } = req.body;
 
       const newEmployee = new EmployeeModel({
         first_name,
         last_name,
+        email,
         position,
         salary,
         date_of_joining,
-        department
+        department,
       });
 
       await newEmployee.save();
@@ -76,20 +82,20 @@ routerEmployee.post(
 );
 
 /**
- * GET /api/v1/emp/employees/:eid
+ * GET /employees/:eid
  * Get an employee by ID
  */
 routerEmployee.get(
   "/employees/:eid",
-  [
-    param("eid").isMongoId().withMessage("Invalid Employee ID"),
-  ],
-  handleValidationErrors,
+  [param("eid").isMongoId().withMessage("Invalid Employee ID")],
+  validate,
   async (req, res) => {
     try {
       const employee = await EmployeeModel.findById(req.params.eid);
       if (!employee) {
-        return res.status(404).json({ status: false, message: "Employee not found" });
+        return res
+          .status(404)
+          .json({ status: false, message: "Employee not found" });
       }
 
       res.status(200).json({ status: true, employee });
@@ -101,21 +107,24 @@ routerEmployee.get(
 );
 
 /**
- * PUT /api/v1/emp/employees/:eid
+ * PUT /employees/:eid
  * Update an employee by ID
  */
 routerEmployee.put(
   "/employees/:eid",
+  authenticateJWT,
+
   [
     param("eid").isMongoId().withMessage("Invalid Employee ID"),
-    body("first_name").optional(),
-    body("last_name").optional(),
-    body("position").optional(),
+    body("email").optional().isEmail().withMessage("Invalid email format"), 
+
     body("salary").optional().isNumeric().withMessage("Salary must be numeric"),
-    body("date_of_joining").optional().isDate().withMessage("Invalid date format (expected YYYY-MM-DD)"),
-    body("department").optional()
+    body("date_of_joining")
+      .optional()
+      .isDate()
+      .withMessage("Invalid date format (expected YYYY-MM-DD)"),
   ],
-  handleValidationErrors,
+  validate,
   async (req, res) => {
     try {
       const employee = await EmployeeModel.findByIdAndUpdate(
@@ -125,7 +134,9 @@ routerEmployee.put(
       );
 
       if (!employee) {
-        return res.status(404).json({ status: false, message: "Employee not found" });
+        return res
+          .status(404)
+          .json({ status: false, message: "Employee not found" });
       }
 
       res.status(200).json({
@@ -141,25 +152,27 @@ routerEmployee.put(
 );
 
 /**
- * DELETE /api/v1/emp/employees?eid=xxx
+ * DELETE /emp/employees?eid=xxx
  * Delete employee by query param
  */
 routerEmployee.delete(
   "/employees",
-  [
-    query("eid").isMongoId().withMessage("Invalid Employee ID in query"),
-  ],
-  handleValidationErrors,
+  authenticateJWT,
+
+  [query("eid").isMongoId().withMessage("Invalid Employee ID in query")],
+  validate,
   async (req, res) => {
     try {
       const { eid } = req.query;
 
       const employee = await EmployeeModel.findByIdAndDelete(eid);
       if (!employee) {
-        return res.status(404).json({ status: false, message: "Employee not found" });
+        return res
+          .status(404)
+          .json({ status: false, message: "Employee not found" });
       }
 
-      res.status(204).send(); // No content on success
+      res.status(204).send(); // No content
     } catch (err) {
       console.error(err);
       res.status(500).json({ status: false, message: "Server Error" });

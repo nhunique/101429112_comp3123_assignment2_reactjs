@@ -1,20 +1,11 @@
 const express = require("express");
-const { body, validationResult } = require("express-validator");
+const { body } = require("express-validator");
 const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
 const UserModel = require("../models/user");
+const validate = require("../middleware/validate");
 
 const routerUser = express.Router();
-
-/**
- * Middleware to handle validation results
- */
-const handleValidationErrors = (req, res, next) => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return res.status(400).json({ status: false, errors: errors.array() });
-  }
-  next();
-};
 
 /**
  *  Signup Route
@@ -30,10 +21,10 @@ routerUser.post(
       .notEmpty().withMessage("Password is required")
       .isLength({ min: 6 }).withMessage("Password must be at least 6 characters"),
   ],
-  handleValidationErrors,
+  validate,   
   async (req, res) => {
     try {
-      const { username, email, password} = req.body;
+      const { username, email, password } = req.body;
 
       // Check if email already exists
       const existingUser = await UserModel.findOne({ email });
@@ -47,7 +38,7 @@ routerUser.post(
       const newUser = new UserModel({
         username,
         email,
-        password: hashedPassword
+        password: hashedPassword,
       });
 
       await newUser.save();
@@ -61,21 +52,16 @@ routerUser.post(
 );
 
 /**
- * ✅ Login Route
+ * Login Route
  */
 routerUser.post(
   "/login",
   [
-    body("email")
-      .optional()
-      .isEmail().withMessage("Invalid email format"),
-    body("username")
-      .optional()
-      .notEmpty().withMessage("Username is required if email is not provided"),
-    body("password")
-      .notEmpty().withMessage("Password is required"),
+    body("email").optional().isEmail().withMessage("Invalid email format"),
+    body("username").optional().notEmpty().withMessage("Username is required if email is not provided"),
+    body("password").notEmpty().withMessage("Password is required"),
   ],
-  handleValidationErrors,
+  validate,   
   async (req, res) => {
     try {
       const { username, email, password } = req.body;
@@ -95,9 +81,18 @@ routerUser.post(
         return res.status(400).json({ status: false, message: "Invalid password" });
       }
 
+      // Create JWT token
+      const token = jwt.sign(
+        { id: user._id, email: user.email, username: user.username },
+        process.env.JWT_SECRET,
+        { expiresIn: "2h" }
+      );
+      console.log("Token: ", token)
+
       res.status(200).json({
         status: true,
         message: "Login successful",
+        token,   // ⬅️ Return token to frontend
         user: {
           username: user.username,
           email: user.email,
@@ -109,6 +104,5 @@ routerUser.post(
     }
   }
 );
-
 
 module.exports = routerUser;

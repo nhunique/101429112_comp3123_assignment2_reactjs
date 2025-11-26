@@ -1,10 +1,17 @@
 require("dotenv").config();
 
+const cors = require("cors");
 const express = require("express");
 const path = require("path");
 const mongoose = require("mongoose");
 
 const app = express();
+
+// Allow CORS
+app.use(cors({
+  origin: "http://localhost:3000", // React app origin
+}));
+
 
 // Import routes
 const userRouter = require("./routes/user");
@@ -27,8 +34,8 @@ mongoose
   .catch((err) => console.error("❌ MongoDB connection error:", err));
 
 // Routes
-app.use("/api/v1/user", userRouter);
-app.use("/api/v1/emp", empRouter);
+app.use(userRouter);
+app.use(empRouter);
 
 // Default route
 app.get("/", (req, res) => {
