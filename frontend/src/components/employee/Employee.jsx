@@ -2,6 +2,9 @@ import React, { useEffect, useState, useCallback } from "react";
 import api from "../../api/axios";
 import EmployeeForm from "./EmployeeForm";
 import EmployeeDetails from "./EmployeeDetails";
+import "./Employee.css";
+import EmployeeSearch from "./EmployeeSearch";
+
 
 function Employee() {
   const [employees, setEmployees] = useState([]);
@@ -21,6 +24,7 @@ function Employee() {
       setEmployees(response.data.employees);
     } catch (err) {
       alert("Failed to fetch employees");
+      console.error(err);
     }
   }, [token]); // dependency array includes token
 
@@ -61,22 +65,21 @@ function Employee() {
     setSelectedEmployee(employee);
     setShowDetails(true);
   };
-
   return (
-    <div style={{ padding: "20px" }}>
+    <div className="employee-container">
       <h2>Employee Management</h2>
-      <button onClick={handleAdd} style={{ marginBottom: "20px" }}>
+                    <EmployeeSearch/>
+      
+      <button className="employee-button" onClick={handleAdd}>
         Add Employee
       </button>
 
-      <table
-        border="1"
-        cellPadding="10"
-        style={{ width: "100%", borderCollapse: "collapse" }}
-      >
+      <table className="employee-table">
         <thead>
           <tr>
             <th>Name</th>
+            <th>Email</th>
+
             <th>Position</th>
             <th>Salary</th>
             <th>Department</th>
@@ -90,14 +93,31 @@ function Employee() {
               <td>
                 {emp.first_name} {emp.last_name}
               </td>
+              <td>{emp.email}</td>
+
               <td>{emp.position}</td>
               <td>{emp.salary}</td>
               <td>{emp.department}</td>
               <td>{emp.date_of_joining?.split("T")[0]}</td>
               <td>
-                <button onClick={() => handleView(emp)}>View</button>
-                <button onClick={() => handleEdit(emp)}>Update</button>
-                <button onClick={() => handleDelete(emp._id)}>Delete</button>
+                <button
+                  className="action-button"
+                  onClick={() => handleView(emp)}
+                >
+                  View
+                </button>
+                <button
+                  className="action-button"
+                  onClick={() => handleEdit(emp)}
+                >
+                  Update
+                </button>
+                <button
+                  className="action-button"
+                  onClick={() => handleDelete(emp._id)}
+                >
+                  Delete
+                </button>
               </td>
             </tr>
           ))}
