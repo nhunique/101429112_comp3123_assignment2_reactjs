@@ -2,8 +2,8 @@ import React, { useEffect, useState, useCallback } from "react";
 import api from "../../api/axios";
 import EmployeeForm from "./EmployeeForm";
 import EmployeeDetails from "./EmployeeDetails";
-import "./Employee.css";
 import EmployeeSearch from "./EmployeeSearch";
+ import 'bootstrap/dist/css/bootstrap.min.css';
 
 
 function Employee() {
@@ -66,80 +66,86 @@ function Employee() {
     setShowDetails(true);
   };
   return (
-    <div className="employee-container">
-      <h2>Employee Management</h2>
-                    <EmployeeSearch/>
-      
-      <button className="employee-button" onClick={handleAdd}>
-        Add Employee
-      </button>
+    <div className="min-vh-100 p-4 bg-light">
+  <h2 className="mb-4 fw-bold text-dark">Employee Management</h2>
 
-      <table className="employee-table">
-        <thead>
-          <tr>
-            <th>Name</th>
-            <th>Email</th>
+  <EmployeeSearch />
 
-            <th>Position</th>
-            <th>Salary</th>
-            <th>Department</th>
-            <th>Date Joined</th>
-            <th>Actions</th>
+  <button
+    className="btn btn-primary mb-3"
+    onClick={handleAdd}
+  >
+    Add Employee
+  </button>
+
+  <div className="table-responsive">
+    <table className="table table-bordered table-hover bg-white rounded">
+      <thead className="bg-primary text-white">
+        <tr>
+          <th>Name</th>
+          <th>Email</th>
+          <th>Position</th>
+          <th>Salary</th>
+          <th>Department</th>
+          <th>Date Joined</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        {employees.map((emp) => (
+          <tr key={emp._id}>
+            <td>{emp.first_name} {emp.last_name}</td>
+            <td>{emp.email}</td>
+            <td>{emp.position}</td>
+            <td>{emp.salary}</td>
+            <td>{emp.department}</td>
+            <td>{emp.date_of_joining?.split("T")[0]}</td>
+            <td>
+              <button
+                className="btn btn-sm btn-primary me-2"
+                onClick={() => handleView(emp)}
+              >
+                View
+              </button>
+
+              <button
+                className="btn btn-sm btn-warning me-2"
+                onClick={() => handleEdit(emp)}
+              >
+                Update
+              </button>
+
+              <button
+                className="btn btn-sm btn-danger"
+                onClick={() => handleDelete(emp._id)}
+              >
+                Delete
+              </button>
+            </td>
           </tr>
-        </thead>
-        <tbody>
-          {employees.map((emp) => (
-            <tr key={emp._id}>
-              <td>
-                {emp.first_name} {emp.last_name}
-              </td>
-              <td>{emp.email}</td>
+        ))}
+      </tbody>
+    </table>
+  </div>
 
-              <td>{emp.position}</td>
-              <td>{emp.salary}</td>
-              <td>{emp.department}</td>
-              <td>{emp.date_of_joining?.split("T")[0]}</td>
-              <td>
-                <button
-                  className="action-button"
-                  onClick={() => handleView(emp)}
-                >
-                  View
-                </button>
-                <button
-                  className="action-button"
-                  onClick={() => handleEdit(emp)}
-                >
-                  Update
-                </button>
-                <button
-                  className="action-button"
-                  onClick={() => handleDelete(emp._id)}
-                >
-                  Delete
-                </button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+  {showForm && (
+    <EmployeeForm
+      mode={formMode}
+      employee={selectedEmployee}
+      onClose={() => setShowForm(false)}
+      refresh={fetchEmployees}
+    />
+  )}
 
-      {showForm && (
-        <EmployeeForm
-          mode={formMode}
-          employee={selectedEmployee}
-          onClose={() => setShowForm(false)}
-          refresh={fetchEmployees}
-        />
-      )}
+  {showDetails && (
+    <EmployeeDetails
+      employee={selectedEmployee}
+      onClose={() => setShowDetails(false)}
+    />
+  )}
+</div>
 
-      {showDetails && (
-        <EmployeeDetails
-          employee={selectedEmployee}
-          onClose={() => setShowDetails(false)}
-        />
-      )}
-    </div>
   );
 }
 

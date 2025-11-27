@@ -1,18 +1,26 @@
 import React from "react";
+ import 'bootstrap/dist/css/bootstrap.min.css';
 
 function EmployeeDetails({ employee, onClose }) {
   if (!employee) return null;
 
   return (
-    <div style={{ border: "1px solid gray", padding: "20px", marginTop: "20px" }}>
-      <h3>Employee Details</h3>
-      <p><b>Name:</b> {employee.first_name} {employee.last_name}</p>
-      <p><b>Position:</b> {employee.position}</p>
-      <p><b>Salary:</b> {employee.salary}</p>
-      <p><b>Department:</b> {employee.department}</p>
-      <p><b>Date Joined:</b> {employee.date_of_joining?.split("T")[0]}</p>
-      <button onClick={onClose}>Close</button>
-    </div>
+    <div className="card mt-4 shadow-sm">
+  <div className="card-body">
+    <h3 className="card-title mb-3 fw-bold">Employee Details</h3>
+
+    <p><strong>Name:</strong> {employee.first_name} {employee.last_name}</p>
+    <p><strong>Position:</strong> {employee.position}</p>
+    <p><strong>Salary:</strong> {employee.salary}</p>
+    <p><strong>Department:</strong> {employee.department}</p>
+    <p><strong>Date Joined:</strong> {employee.date_of_joining?.split("T")[0]}</p>
+
+    <button className="btn btn-secondary mt-3" onClick={onClose}>
+      Close
+    </button>
+  </div>
+</div>
+
   );
 }
 

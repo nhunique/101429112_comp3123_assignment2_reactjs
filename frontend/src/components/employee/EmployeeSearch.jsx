@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import api from "../../api/axios";
+ import 'bootstrap/dist/css/bootstrap.min.css';
 
 function EmployeeSearch({ setEmployees }) {
   const [department, setDepartment] = useState("");
@@ -17,35 +18,33 @@ function EmployeeSearch({ setEmployees }) {
   };
 
   return (
-    <div style={{ marginBottom: "20px" }}>
-      <input
-        type="text"
-        placeholder="Department"
-        value={department}
-        onChange={(e) => setDepartment(e.target.value)}
-        style={{ marginRight: "10px", padding: "6px 10px" }}
-      />
-      <input
-        type="text"
-        placeholder="Position"
-        value={position}
-        onChange={(e) => setPosition(e.target.value)}
-        style={{ marginRight: "10px", padding: "6px 10px" }}
-      />
-      <button
-        onClick={handleSearch}
-        style={{
-          padding: "6px 12px",
-          backgroundColor: "#4a90e2",
-          color: "#fff",
-          border: "none",
-          borderRadius: "6px",
-          cursor: "pointer",
-        }}
-      >
-        Search
-      </button>
-    </div>
+   <div className="mb-3 d-flex align-items-center">
+  <input
+    type="text"
+    placeholder="Department"
+    value={department}
+    onChange={(e) => setDepartment(e.target.value)}
+    className="form-control me-2"
+    style={{ maxWidth: "200px" }}  // Optional if you want smaller input
+  />
+
+  <input
+    type="text"
+    placeholder="Position"
+    value={position}
+    onChange={(e) => setPosition(e.target.value)}
+    className="form-control me-2"
+    style={{ maxWidth: "200px" }}  // Optional
+  />
+
+  <button
+    onClick={handleSearch}
+    className="btn btn-primary"
+  >
+    Search
+  </button>
+</div>
+
   );
 }
 
