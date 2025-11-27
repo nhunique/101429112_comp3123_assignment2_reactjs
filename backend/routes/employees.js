@@ -3,6 +3,7 @@ const { body, param, query } = require("express-validator");
 const EmployeeModel = require("../models/employee");
 const validate = require("../middleware/validate");
 const authenticateJWT = require("../middleware/auth");
+const upload = require("../middleware/upload");
 
 const routerEmployee = express.Router();
 
@@ -73,6 +74,8 @@ routerEmployee.post(
     body("department").notEmpty().withMessage("Department is required"),
   ],
   validate,
+    upload.single("profile_picture"), // Accept single file
+
   async (req, res) => {
     try {
       const {
@@ -93,6 +96,8 @@ routerEmployee.post(
         salary,
         date_of_joining,
         department,
+                profile_picture: req.file ? req.file.filename : null,
+
       });
 
       await newEmployee.save();
@@ -142,6 +147,7 @@ routerEmployee.get(
 routerEmployee.put(
   "/employees/:eid",
   authenticateJWT,
+  upload.single("profile_picture"),
 
   [
     param("eid").isMongoId().withMessage("Invalid Employee ID"),
@@ -161,7 +167,9 @@ routerEmployee.put(
         req.body,
         { new: true }
       );
-
+ if (req.file) {
+        updateData.profile_picture = req.file.filename;
+      }
       if (!employee) {
         return res
           .status(404)

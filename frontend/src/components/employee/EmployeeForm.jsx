@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import api from "../../api/axios";
- import 'bootstrap/dist/css/bootstrap.min.css';
+import "bootstrap/dist/css/bootstrap.min.css";
 
 function EmployeeForm({ mode, employee, onClose, refresh }) {
   const [firstName, setFirstName] = useState("");
@@ -10,6 +10,7 @@ function EmployeeForm({ mode, employee, onClose, refresh }) {
   const [salary, setSalary] = useState("");
   const [department, setDepartment] = useState("");
   const [dateOfJoining, setDateOfJoining] = useState("");
+  const [profilePicture, setProfilePicture] = useState(null);
 
   const token = localStorage.getItem("token");
 
@@ -24,32 +25,43 @@ function EmployeeForm({ mode, employee, onClose, refresh }) {
       setDateOfJoining(employee.date_of_joining?.split("T")[0] || "");
     }
   }, [employee, mode]);
-
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const payload = {
-      first_name: firstName,
-      last_name: lastName,
-      email: email,
-      position,
-       salary: salary ? Number(salary) : 0,
-      department,
-      date_of_joining: dateOfJoining
-        ? new Date(dateOfJoining).toISOString().split("T")[0]
-        : null,
-    };
+
+    const formData = new FormData();
+    formData.append("first_name", firstName);
+    formData.append("last_name", lastName);
+    formData.append("email", email);
+    formData.append("position", position);
+    formData.append("salary", salary ? Number(salary) : 0);
+    formData.append("department", department);
+    if (dateOfJoining) {
+      formData.append(
+        "date_of_joining",
+        new Date(dateOfJoining).toISOString().split("T")[0]
+      );
+    }
+    if (profilePicture) {
+      formData.append("profile_picture", profilePicture);
+    }
 
     try {
       if (mode === "add") {
-        await api.post("/employees", payload, {
-          headers: { Authorization: `Bearer ${token}` },
+        await api.post("/employees", formData, {
+          headers: {
+            "Content-Type": "multipart/form-data",
+            Authorization: `Bearer ${token}`,
+          },
         });
-        console.log("POST payload:", payload);
       } else if (mode === "edit") {
-        await api.put(`/employees/${employee._id}`, payload, {
-          headers: { Authorization: `Bearer ${token}` },
+        await api.put(`/employees/${employee._id}`, formData, {
+          headers: {
+            "Content-Type": "multipart/form-data",
+            Authorization: `Bearer ${token}`,
+          },
         });
       }
+
       refresh();
       onClose();
     } catch (err) {
@@ -58,8 +70,8 @@ function EmployeeForm({ mode, employee, onClose, refresh }) {
     }
   };
 
-return (
-   <div className="card p-4 mt-4 shadow-sm">
+  return (
+    <div className="card p-4 mt-4 shadow-sm">
       <h3 className="fw-bold mb-3">
         {mode === "add" ? "Add Employee" : "Update Employee"}
       </h3>
@@ -67,6 +79,14 @@ return (
       <form onSubmit={handleSubmit}>
         <div className="row">
           <div className="col-md-6 mb-3">
+            <div className="mb-3">
+              <input
+                type="file"
+                accept="image/*"
+                onChange={(e) => setProfilePicture(e.target.files[0])}
+              />
+            </div>
+
             <input
               type="text"
               id="firstName"

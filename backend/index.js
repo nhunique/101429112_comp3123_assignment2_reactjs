@@ -22,6 +22,7 @@ const empRouter = require("./routes/employees");
 // Middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use("/uploads", express.static("uploads"));
 
 // Environment variables
 const PORT = process.env.PORT || 8081;

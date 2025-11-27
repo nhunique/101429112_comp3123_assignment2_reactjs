@@ -47,6 +47,7 @@ const employeeSchema = new mongoose.Schema({
   updated_at: {
     type: Date,
   },
+    profile_picture: { type: String , required: false}, 
 });
 
 // 🔄 Automatically update "updated_at" before saving
