@@ -87,6 +87,7 @@ routerEmployee.post(
  */
 routerEmployee.get(
   "/employees/:eid",
+   authenticateJWT,
   [param("eid").isMongoId().withMessage("Invalid Employee ID")],
   validate,
   async (req, res) => {
@@ -179,5 +180,22 @@ routerEmployee.delete(
     }
   }
 );
+
+
+// GET /employees?department=Sales&position=Manager
+routerEmployee.get("/employees", async (req, res) => {
+  try {
+    const { department, position } = req.query;
+    const query = {};
+
+    if (department) query.department = department;
+    if (position) query.position = position;
+
+    const employees = await Employee.find(query);
+    res.json(employees);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
 
 module.exports = routerEmployee;

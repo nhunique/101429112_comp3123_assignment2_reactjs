@@ -8,10 +8,12 @@ const mongoose = require("mongoose");
 const app = express();
 
 // Allow CORS
-app.use(cors({
-  origin: "http://localhost:3000", // React app origin
-}));
-
+app.use(
+  cors({
+    origin: "http://localhost:3000", // React app origin
+    credentials: true,
+  })
+);
 
 // Import routes
 const userRouter = require("./routes/user");
@@ -21,11 +23,9 @@ const empRouter = require("./routes/employees");
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-
 // Environment variables
 const PORT = process.env.PORT || 8081;
 const DB_CONNECTION_STRING = process.env.DB_CONNECTION_STRING;
-
 
 // MongoDB connection
 mongoose
