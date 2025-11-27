@@ -22,6 +22,7 @@ function Employee() {
         headers: { Authorization: `Bearer ${token}` },
       });
       setEmployees(response.data.employees);
+
     } catch (err) {
       alert("Failed to fetch employees");
       console.error(err);
@@ -69,7 +70,7 @@ function Employee() {
     <div className="min-vh-100 p-4 bg-light">
   <h2 className="mb-4 fw-bold text-dark">Employee Management</h2>
 
-  <EmployeeSearch />
+  <EmployeeSearch setEmployees={setEmployees}/>
 
   <button
     className="btn btn-primary mb-3"

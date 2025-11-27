@@ -6,6 +6,34 @@ const authenticateJWT = require("../middleware/auth");
 
 const routerEmployee = express.Router();
 
+routerEmployee.get(
+  "/employees/search",
+  authenticateJWT,
+  [
+    query("department").optional().isString(),
+    query("position").optional().isString(),
+  ],
+  validate,
+  async (req, res) => {
+    try {
+      const department = req.query.department?.trim();
+      const position = req.query.position?.trim();
+
+      const queryObj = {};
+      if (department) queryObj.department = { $regex: department, $options: "i" };
+      if (position) queryObj.position = { $regex: position, $options: "i" };
+
+      const employees = await EmployeeModel.find(queryObj);
+
+      res.status(200).json({ status: true, employees });
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ status: false, message: "Server Error" });
+    }
+  }
+);
+
+
 /**
  * GET /employees
  * List all employees
@@ -182,20 +210,5 @@ routerEmployee.delete(
 );
 
 
-// GET /employees?department=Sales&position=Manager
-routerEmployee.get("/employees", async (req, res) => {
-  try {
-    const { department, position } = req.query;
-    const query = {};
-
-    if (department) query.department = department;
-    if (position) query.position = position;
-
-    const employees = await Employee.find(query);
-    res.json(employees);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
 
 module.exports = routerEmployee;
