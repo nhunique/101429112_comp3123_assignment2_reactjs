@@ -3,7 +3,7 @@ const { body, param, query } = require("express-validator");
 const EmployeeModel = require("../models/employee");
 const validate = require("../middleware/validate");
 const authenticateJWT = require("../middleware/auth");
-const upload = require("../middleware/upload");
+const { uploadSingleWithErrors }  = require("../middleware/upload");
 
 const routerEmployee = express.Router();
 
@@ -21,7 +21,8 @@ routerEmployee.get(
       const position = req.query.position?.trim();
 
       const queryObj = {};
-      if (department) queryObj.department = { $regex: department, $options: "i" };
+      if (department)
+        queryObj.department = { $regex: department, $options: "i" };
       if (position) queryObj.position = { $regex: position, $options: "i" };
 
       const employees = await EmployeeModel.find(queryObj);
@@ -34,12 +35,11 @@ routerEmployee.get(
   }
 );
 
-
 /**
  * GET /employees
  * List all employees
  */
-routerEmployee.get("/employees", authenticateJWT,async (req, res) => {
+routerEmployee.get("/employees", authenticateJWT, async (req, res) => {
   try {
     const employees = await EmployeeModel.find();
     res.status(200).json({ status: true, employees });
@@ -56,6 +56,8 @@ routerEmployee.get("/employees", authenticateJWT,async (req, res) => {
 routerEmployee.post(
   "/employees",
   authenticateJWT,
+    uploadSingleWithErrors("profile_picture"),
+
   [
     body("first_name").notEmpty().withMessage("First name is required"),
     body("last_name").notEmpty().withMessage("Last name is required"),
@@ -74,10 +76,10 @@ routerEmployee.post(
     body("department").notEmpty().withMessage("Department is required"),
   ],
   validate,
-    upload.single("profile_picture"), // Accept single file
 
   async (req, res) => {
     try {
+
       const {
         first_name,
         last_name,
@@ -96,8 +98,7 @@ routerEmployee.post(
         salary,
         date_of_joining,
         department,
-                profile_picture: req.file ? req.file.filename : null,
-
+        profile_picture: req.file ? req.file.filename : null,
       });
 
       await newEmployee.save();
@@ -120,7 +121,7 @@ routerEmployee.post(
  */
 routerEmployee.get(
   "/employees/:eid",
-   authenticateJWT,
+  authenticateJWT,
   [param("eid").isMongoId().withMessage("Invalid Employee ID")],
   validate,
   async (req, res) => {
@@ -147,11 +148,11 @@ routerEmployee.get(
 routerEmployee.put(
   "/employees/:eid",
   authenticateJWT,
-  upload.single("profile_picture"),
+  uploadSingleWithErrors("profile_picture"),
 
   [
     param("eid").isMongoId().withMessage("Invalid Employee ID"),
-    body("email").optional().isEmail().withMessage("Invalid email format"), 
+    body("email").optional().isEmail().withMessage("Invalid email format"),
 
     body("salary").optional().isNumeric().withMessage("Salary must be numeric"),
     body("date_of_joining")
@@ -162,14 +163,19 @@ routerEmployee.put(
   validate,
   async (req, res) => {
     try {
-      const employee = await EmployeeModel.findByIdAndUpdate(
-        req.params.eid,
-        req.body,
-        { new: true }
-      );
- if (req.file) {
+     const updateData = { ...req.body };
+
+      // Only update profile picture if user uploads a file
+      if (req.file) {
         updateData.profile_picture = req.file.filename;
       }
+
+      const employee = await EmployeeModel.findByIdAndUpdate(
+        req.params.eid,
+        updateData,
+        { new: true }
+      );
+
       if (!employee) {
         return res
           .status(404)
@@ -198,6 +204,8 @@ routerEmployee.delete(
 
   [query("eid").isMongoId().withMessage("Invalid Employee ID in query")],
   validate,
+    uploadSingleWithErrors("profile_picture"),
+
   async (req, res) => {
     try {
       const { eid } = req.query;
@@ -216,7 +224,5 @@ routerEmployee.delete(
     }
   }
 );
-
-
 
 module.exports = routerEmployee;

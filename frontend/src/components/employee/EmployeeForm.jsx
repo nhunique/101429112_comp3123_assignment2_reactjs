@@ -64,8 +64,13 @@ function EmployeeForm({ mode, employee, onClose, refresh }) {
 
       refresh();
       onClose();
-    } catch (err) {
-      console.error(err);
+    } catch (error) {
+      if (error.response) {
+        alert(error.response.data.message); 
+      } else {
+        alert("Unexpected error occurred.");
+      }
+      console.error(error);
       alert("Failed to save employee");
     }
   };
