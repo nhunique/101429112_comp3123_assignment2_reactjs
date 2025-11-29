@@ -3,6 +3,7 @@ import api from "../../api/axios";
 import EmployeeForm from "./EmployeeForm";
 import EmployeeDetails from "./EmployeeDetails";
 import EmployeeSearch from "./EmployeeSearch";
+import LogoutButton from "../../components/LogoutButton";
 import "bootstrap/dist/css/bootstrap.min.css";
 
 function Employee() {
@@ -66,6 +67,9 @@ function Employee() {
   };
   return (
     <div className="min-vh-100 p-4 bg-light">
+      <div className="d-flex justify-content-end mb-3">
+        <LogoutButton />
+      </div>
       <h2 className="mb-4 fw-bold text-dark">Employee Management</h2>
 
       <EmployeeSearch setEmployees={setEmployees} />
@@ -97,7 +101,7 @@ function Employee() {
                 </td>
                 <td>
                   <img
-                    src={`http://localhost:8081/uploads/${emp.profile_picture}`}
+                    src={`http://localhost:5000/uploads/${emp.profile_picture}`}
                     alt="Profile"
                     width="50"
                   />
