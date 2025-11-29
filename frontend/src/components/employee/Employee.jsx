@@ -3,7 +3,7 @@ import api from "../../api/axios";
 import EmployeeForm from "./EmployeeForm";
 import EmployeeDetails from "./EmployeeDetails";
 import EmployeeSearch from "./EmployeeSearch";
-import LogoutButton from "../../components/LogoutButton";
+import LogoutButton from "../user/LogoutButton";
 import "bootstrap/dist/css/bootstrap.min.css";
 
 function Employee() {
